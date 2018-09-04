@@ -13,7 +13,7 @@
                 <div class="input-group m-t-10">
                     <input type="text"  name="hadits" class="form-control input-lg" placeholder="Cari Hadits...">
                     <span class="input-group-btn">
-                    <button type="submit" class="btn waves-effect waves-light btn-default btn-lg"><i class="fa fa-search m-r-5"></i> Cari</button>
+                    <button type="submit" name="submit" value="submit" class="btn waves-effect waves-light btn-default btn-lg"><i class="fa fa-search m-r-5"></i> Cari</button>
                     </span>    
                 </div>
             </form>
@@ -48,13 +48,13 @@
                                         <div class="search-item">
                                             <h3 class="h5 font-600 m-b-5"><a href="#">Hadits Nomor <?=$value[1]?> </a></h3>
                                             <div class="font-13 text-success m-b-10">
-                                                Kitab <?=$value[3]?>
+                                                Kitab <?=$value[2]?>
                                             </div>
                                             <p>
-                                                <?=$value[4]?>
+                                                <?=$value[3]?>
                                             </p>
                                             <p>
-                                                <?=$value[2]?>
+                                                <?=$value[4]?>
                                             </p>
                                             <p>
                                                 <small> Nilai Dice : <?=$value[0]?></small>
@@ -111,4 +111,3 @@
         </div>
     </div>
 </div> <!-- container -->
-               

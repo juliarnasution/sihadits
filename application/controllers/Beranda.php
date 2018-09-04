@@ -16,14 +16,19 @@ class Beranda extends CI_Controller {
 
 	public function index()
 	{
-		$data = null;
+		// $data = array();
+		$data['dice'] = null;
+		$data['query']="";
 		$data['data']=null;
-		$data['query'] = $this->input->post('hadits');
-		$jenis_hadits	= $this->input->post('jenis_hadits');
-		// var_dump ($data);
-		// die();
-		if (!is_null($data['query']) || !empty($data['query'])) {
-			$data['data'] = $this->prosesdata($data['query'],$jenis_hadits);
+		$button = $this->input->post('submit');
+		if(isset($button)) {
+			$data['query'] = $this->input->post('hadits');
+			$jenis_hadits	= $this->input->post('jenis_hadits');
+		}
+		
+		if ($data['query']!="") {
+			$data['dice'] = $this->prosesdata($data['query'],$jenis_hadits);
+			$data['data']=$this->hasil_pencarian($data['dice'],$jenis_hadits);
 		}
 		$this->load->view('template/headerberanda');
 		$this->load->view('index',$data);
@@ -97,6 +102,34 @@ class Beranda extends CI_Controller {
 		$this->load->view('template/footerberanda');
 	}
 
+	public function hasil_pencarian($data=array(), $jenis_hadits)
+	{
+		$hasil[]= null;
+		$j =0;
+		foreach ($data as $nilai) {
+			if ($j==10 || $nilai[0]==0) {
+				break;
+			}
+			$hadits = $this->SistemModel->get_data($jenis_hadits,array('No'=>$nilai[1]))->result();
+			foreach ($hadits as $value) {
+				$hasil[$j] = array(
+					$nilai[0],$value->No,$value->Kitab,$value->Arab,$value->Terjemah
+				);
+			}
+			$j++;
+		}
+		// for ($i=1; $i <count($data) ; $i++) { 
+		// 	$hadits = $this->SistemModel->get_data($jenis_hadits,array('No'=>$data[$i][1]))->result();
+		// 	foreach ($hadits as $value) {
+		// 		$hasil[$i] = array(
+		// 			$data[$i][0],$value->No,$value->Kitab,$value->Arab,$value->Terjemah
+		// 		);
+		// 	}
+			
+		// }
+		return $hasil;
+	}
+
 	public function atur_data($data=array())
 	{
 		foreach ($data as $value) {
@@ -117,8 +150,20 @@ class Beranda extends CI_Controller {
 	  }
 	}
 
-	public function prosesdata($query_form="",$jenis_hadits)
+	
+	// public function tes($value='a')
+	// {
+	// 	$this->load->library('stemming');
+	// 	$a= $this->cari_stemming($value);
+	// 	$b = $this->stemming->hapuspartikel($value,$a);
+	// 	echo "<pre>";
+	// 	print_r ($b);
+	// 	echo "</pre>";
+	// }
+
+	public function prosesdata($query_form="",$jenis_hadits='muslim')
 	{
+		// $query_form ="mengerjakan shalat secara berjamaah ketika adzan telah berkumandang";
 		$this->load->library('preprocessing');
         $this->load->library('stemming');
 		$query = array(
@@ -128,22 +173,33 @@ class Beranda extends CI_Controller {
 			)
 		);
 
-		// $tokenisasi = $this->preprocessing->preproses($data); //tokenisasi query
-		// $stopword = $this->stopwords($tokenisasi);//menghilangkan kata sambung pada query atau proses stopword
+				// $tokenisasi = $this->preprocessing->preproses($data); //tokenisasi query
+				// $stopword = $this->stopwords($tokenisasi);//menghilangkan kata sambung pada query atau proses stopword
+		/* ini jika data hadits masih di panggil 
 		$hadits = $this->dataHadits($jenis_hadits,"No");
 		$gabung = $this->menggabungkan_array($query,$hadits);//menggabungkan query dan hadits kedalam array
 		$token = $this->tokenisasi($gabung);
 		$haditsbersih = $this->bersihkan_token($token);//mengahpus array yang kosong
 		$hasilStopword = $this->stopwords_stemming($haditsbersih);//stopword dan stemming
 		$bersihLagi = $this->bersihkan_token($hasilStopword);
+		*/
 
-		$data_tf = $this->preprocessing->mencari_tf($bersihLagi);//dokumen per term
-		// echo "<pre>";
-		// print_r($data_tf);//df sudah ditemukan, selanjutnya mencari idf
-		// echo "</pre>";
-		// die();
+		// $hadits = $this->dataHadits($jenis_hadits,"No");
+		// $gabung = $this->menggabungkan_array($query,$hadits);//menggabungkan query dan hadits kedalam array
+		$token = $this->tokenisasi($query);
+		$haditsbersih = $this->bersihkan_token($token);//mengahpus array yang kosong
+		$hasilStopword = $this->stopwords_stemming($haditsbersih);//stopword dan stemming
+		$bersihLagi = $this->bersihkan_token($hasilStopword);
+
+		$tf_query_term_hadits = $this->preprocessing->tf_query($this->term_hadits($jenis_hadits),$bersihLagi);
+		$gabung_tf_term_hadits = $this->menggabungkan_array($this->rapikan_tf_query($tf_query_term_hadits),$this->tf_hadits($jenis_hadits));//menggabungkan tf query dan hadits kedalam array
+
+		$data_tf_term_query = $this->rapikan_tf_query($this->preprocessing->mencari_tf_query($this->menggabungkan_array($bersihLagi,$this->term_hadits($jenis_hadits))));//dokumen per term query
+
+		$data_tf = $this->gabung_semua_tf($data_tf_term_query,$gabung_tf_term_hadits);//semua tf hadits dan tf query digabungkan
+		
 		$data_df = $this->preprocessing->mencari_df($data_tf);//df per term
-		$data_idf = $this->preprocessing->mencari_idf($data_df,$gabung);//mencari idf dengan menginputkan kumpulan nilai df dan jumlah dokumen
+		$data_idf = $this->preprocessing->mencari_idf($data_df,$gabung_tf_term_hadits);//mencari idf dengan menginputkan kumpulan nilai df dan jumlah dokumen
 		$data_tf_kali_idf = $this->preprocessing->tf_kali_idf($data_tf,$data_idf); //mengalikan tf dan idf, dilaporan sudah sampai tahap 5.
 		$data_idfQuerykaliIdfDoc = $this->preprocessing->query_kali_dokumen($data_tf_kali_idf);// tahap 6
 		$data_jumlah_hasilKaliIdf = $this->preprocessing->penjumlahan_hasil_kali($data_idfQuerykaliIdfDoc);//jumlah total keseluruhan dari hasil kali antara idf query dengan idf tiap dokumen tahap 7
@@ -152,8 +208,9 @@ class Beranda extends CI_Controller {
 		$vektor_query_tambah_vektor_dok = $this->preprocessing->vektor_query_tambah_vektor_dok($data_jumlah_panjangVektor); // vektor query ditambah vektor tiap dokumen tahap 10.
 		$nilai_dice = $this->preprocessing->mencari_dice($data_jumlah_hasilKaliIdf,$vektor_query_tambah_vektor_dok); //2 dikali jumlah hasil kali idf dan idf dok (tahap 7) dibagi hasil vektor query tambah vektor dok.  2 kali tahap 7 di bagi tahap 10.. ini adalah tahap 11.
 
-		/*selanjutnya mengurutkan data*/
-		$hadits_dan_dice = $this->menggabungkan_dice_data_data($hadits,$nilai_dice);//menggabungkan data hadits dengan nilai dicenya
+
+		// /*selanjutnya mengurutkan data*/
+		$hadits_dan_dice = $this->menggabungkan_dice_data_data($this->nomor_hadits($jenis_hadits),$nilai_dice);//menggabungkan data hadits dengan nilai dicenya
 		$dice_terurut = $this->urutkan_array($hadits_dan_dice);//mengurutkan data dengan nilai dice paling besar
 
 		//selanjutnya menampilkan data ke web.
@@ -161,10 +218,64 @@ class Beranda extends CI_Controller {
 		return $dice_terurut;
 
 		// echo "<pre>";
-		// print_r($bersihLagi);//df sudah ditemukan, selanjutnya mencari idf
+		// print_r($dice_terurut);//df sudah ditemukan, selanjutnya mencari idf
 		// echo "</pre>";
 		// var_dump() ;
 
+	}
+
+	public function nomor_hadits($hadits)
+	{
+		$tabel = ($hadits=='muslim') ? 'stemming_muslim' : 'stemming_bukhari' ;
+
+		$hasil = array();
+		$data = $this->SistemModel->all_data($tabel,"nomor","DESC");
+		foreach ($data as $value) {
+			$hasil[] = array($value->nomor);
+		}
+		return $hasil;
+	}
+
+	public function gabung_semua_tf($tf_term_query=array(),$tf_term_hadits=array())
+	{
+		for ($i=0; $i <count($tf_term_query) ; $i++) { 
+			$gabung[$i] = array_merge($tf_term_query[$i],$tf_term_hadits[$i]);
+		}
+		return $gabung;
+	}
+
+	public function rapikan_tf_query($data_tf=array())
+	{
+		for ($i=0; $i <count($data_tf) ; $i++) { 
+			$j=0;			
+			foreach ($data_tf[$i] as $nilai_tf) {
+				$hasil_tf[$i][$j] = $nilai_tf['nilai_tf'];
+				$j++; 
+			}
+		}
+		return $hasil_tf;
+	}
+
+	public function term_hadits($hadits)
+	{
+		$tabel = ($hadits=='muslim') ? 'stemming_muslim' : 'stemming_bukhari' ;
+
+		$hasil = array();
+		$data = $this->SistemModel->all_data($tabel,"nomor","DESC");
+		foreach ($data as $value) {
+			$hasil[] = array($value->nomor,explode(",", $value->teks_stemming));
+		}
+		return $hasil;
+	}
+
+	public function tf_hadits($hadits)
+	{
+		$tabel = ($hadits=='muslim') ? 'tabel_tf_muslim' : 'tabel_tf_bukhari' ;
+		$data = $this->SistemModel->all_data($tabel,"nomor_dokumen","DESC");
+		foreach ($data as $value) {
+			$hasil[] = explode(",", $value->nilai_tf);
+		}
+		return $hasil;
 	}
 
 	//preproses, menghilangkan simbol simbol
@@ -229,7 +340,7 @@ class Beranda extends CI_Controller {
         return $a6;
 	}
 
-	public function cari_stemming($kata){
+	public function cari_stemming($kata=''){
 		
 		$jumlah_array = $this->SistemModel->stemming($kata);
 		// $a1 = $this->stemming->hapuspartikel($kata,$jumlah_array);
@@ -243,7 +354,7 @@ class Beranda extends CI_Controller {
 	{
 		$hadits = $this->SistemModel->all_data($tabel,$rowId);
 		for ($i=0; $i <count($hadits) ; $i++) { 
-			$hasil[$i+1]=array($hadits[$i]->No,$hadits[$i]->Terjemah,$hadits[$i]->Kitab,$hadits[$i]->Arab);
+			$hasil[$i]=array($hadits[$i]->No,$hadits[$i]->Terjemah,$hadits[$i]->Kitab,$hadits[$i]->Arab);
 		}
 		return $hasil;
 	}
@@ -279,13 +390,25 @@ class Beranda extends CI_Controller {
 
 	public function menggabungkan_dice_data_data($hadits=array(),$nilai_dice=array())
 	{
-		for ($i=1; $i <=count($hadits) ; $i++) { 
-			array_unshift($hadits[$i], $nilai_dice[$i]);
+		// $j=1;
+		for ($i=0; $i <count($hadits) ; $i++) { 
+			array_unshift($hadits[$i], $nilai_dice[$i+1]);
+			// $j++;
 		}
 		return $hadits;
 	}
 
+	// public function menggabungkan_tf()
+	// {
+	// 	$data = $this->SistemModel->all_data("tabel_tf_muslim","nomor_dokumen","DESC");
+	// 	foreach ($data as $value) {
+	// 		$tf_hadits[] = array($value->nomor_dokumen,explode(",", $value->nilai_tf));
+	// 	}
 
+	// 	echo "<pre>";
+	// 	print_r ($tf_hadits);
+	// 	echo "</pre>";
+	// }
 
 
 

@@ -68,28 +68,108 @@ public function stemming($data = array(), $conn) {
     return $hasil;
 }
 
-public function mencari_tf($data=array())
+//nilai tf query terhadap term dari hadits
+public function tf_query($data=array(),$data_query= array())
 {
 	for ($i=0; $i <count($data) ; $i++) { 
 
+		// if ($i==0) { data
+			$term_query[$i] = array_unique($data[$i][1]);//menghilangkan data kembar dari data query form // data dari database
+		// }
+	}
+
+	$j=0;
+	for ($k=0; $k <count($term_query) ; $k++) { 
+		foreach ($term_query[$k] as $value) {
+			$query[$j] = $value;
+			$j++;
+		}
+	}
+
+	$term_unik = array_unique($query);
+
+	$b = 0;
+	foreach ($term_unik as $value1) {
+		$term_urut[$b]= $value1;
+		$b++;
+	}
+	
+	//batas term
+
+	//mencari tf
+	for ($m=0; $m <count($data_query) ; $m++) { 
+		for ($n=0; $n <count($term_urut) ; $n++) { 
+		// foreach ($term_query as $kunci => $isi) {
+				$angka = (in_array($term_urut[$n], $data_query[$m][1])) ? 1 : 0 ;
+				// $tf[$m][$n]=array("index_term"=>$n,"nilai_tf"=>$angka);
+				$tf[$m][$n]=array("nilai_tf"=>$angka);
+			// }
+		}		
+	}//batas mencari tf
+	return $tf;
+}
+
+//ini hanya mencari nilai tf dari query saja
+public function mencari_tf_query($data=array())
+{
+	for ($i=0; $i <count($data) ; $i++) { 
 		if ($i==0) {
 			$term_query = array_unique($data[$i][1]);//menghilangkan data kembar dari data query form
 		}
 	}
-
 	$j=0;
 	foreach ($term_query as $value) {
 		$query[$j] = $value;
 		$j++;
 	}
 	//batas term
-
 	//mencari tf
 	for ($m=0; $m <count($data) ; $m++) { 
 		for ($n=0; $n <count($query) ; $n++) { 
 		// foreach ($term_query as $kunci => $isi) {
 				$angka = (in_array($query[$n], $data[$m][1])) ? 1 : 0 ;
-				$tf[$m][$n]=array("index_term"=>$n,"nilai_tf"=>$angka);
+				$tf[$m][$n]=array("nilai_tf"=>$angka);
+			// }
+		}		
+	}//batas mencari tf
+	return $tf;
+}
+
+//ini fungsi untuk mencari nilai keseluruhan tf dari query dan data
+public function mencari_tf($data=array())
+{
+	for ($i=0; $i <count($data) ; $i++) { 
+
+		// if ($i==0) {
+			$term_query[$i] = array_unique($data[$i][1]);//menghilangkan data kembar dari data query form
+		// }
+	}
+
+	$j=0;
+	for ($k=0; $k <count($term_query) ; $k++) { 
+		foreach ($term_query[$k] as $value) {
+			$query[$j] = $value;
+			$j++;
+		}
+	}
+
+	$term_unik = array_unique($query);
+
+	$b = 0;
+	foreach ($term_unik as $value1) {
+		$term_urut[$b]= $value1;
+		$b++;
+	}
+	
+	//batas term
+
+	//mencari tf
+	for ($m=0; $m <count($data) ; $m++) { 
+		for ($n=0; $n <count($term_urut) ; $n++) { 
+		// foreach ($term_query as $kunci => $isi) {
+				$angka = (in_array($term_urut[$n], $data[$m][1])) ? 1 : 0 ;
+				// $tf[$m][$n]=array("index_term"=>$n,"nilai_tf"=>$angka);
+				$tf[$m][$n]=array("nilai_tf"=>$angka);
 			// }
 		}		
 	}//batas mencari tf
@@ -100,19 +180,19 @@ public function mencari_tf($data=array())
 public function mencari_df($tf=array())
 {
 //mencari df
-	foreach ($tf as $key1 => $tf1) {
-		$i=0;
-		foreach ($tf1 as $key2 => $tf2) {
-			$tfhasil[$key1][$i]=$tf2['nilai_tf'];
-			$i++;
-		}
-	}
+	// foreach ($tf as $key1 => $tf1) {
+	// 	$i=0;
+	// 	foreach ($tf1 as $key2 => $tf2) {
+	// 		$tfhasil[$key1][$i]=$tf2['nilai_tf'];
+	// 		$i++;
+	// 	}
+	// }
 
 	$sumArray = array();
 
-	$jumlah_array = $this->jumlah_array($tfhasil);
+	$jumlah_array = $this->jumlah_array($tf);
 	for ($j=0; $j <$jumlah_array ; $j++) { 
-		$sumArray[] = array_sum(array_column($tfhasil, $j));//nilai df
+		$sumArray[] = array_sum(array_column($tf, $j));//nilai df
 	}
 	//batas mencari df
 	return $sumArray;//hasil berupa array, index array adalah index term
@@ -134,11 +214,21 @@ public function mencari_idf($df=array(),$document = array())
 }
 
 
+// public function tf_kali_idf($tf=array(), $idf=array())
+// {
+// 	for ($i=0; $i <count($tf) ; $i++) { 
+// 		for ($j=0; $j <count($idf) ; $j++) { 
+// 			$hasil_kali[$i][$j]=$tf[$i][$j]['nilai_tf']*$idf[$j];//$i adalah index dokumen, $j index term dan index idf.
+// 		}
+// 	}
+// 	return $hasil_kali;
+// }
+
 public function tf_kali_idf($tf=array(), $idf=array())
 {
 	for ($i=0; $i <count($tf) ; $i++) { 
 		for ($j=0; $j <count($idf) ; $j++) { 
-			$hasil_kali[$i][$j]=$tf[$i][$j]['nilai_tf']*$idf[$j];//$i adalah index dokumen, $j index term dan index idf.
+			$hasil_kali[$i][$j]=$tf[$i][$j]*$idf[$j];//$i adalah index dokumen, $j index term dan index idf.
 		}
 	}
 	return $hasil_kali;

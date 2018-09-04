@@ -10,17 +10,17 @@ class Stemming
 
 	//langkah 1 - hapus partikel
 	function hapuspartikel($kata,$jumlah){
-	if($jumlah!=1){
-		if((substr($kata, -3) == 'kah' )||( substr($kata, -3) == 'lah' )||( substr($kata, -3) == 'pun' )){
-			$kata = substr($kata, 0, -3);			
+		if($jumlah<1){
+			if((substr($kata, -3) == 'kah' )||( substr($kata, -3) == 'lah' )||( substr($kata, -3) == 'pun' )){
+				$kata = substr($kata, 0, -3);			
+				}
 			}
-		}
 		return $kata;
 	}
 
 	//langkah 2 - hapus possesive pronoun
 	function hapuspp($kata,$jumlah){
-	if($jumlah!=1){
+	if($jumlah<1){
 		if(strlen($kata) > 4){
 		if((substr($kata, -2)== 'ku')||(substr($kata, -2)== 'mu')){
 			$kata = substr($kata, 0, -2);
@@ -34,7 +34,7 @@ class Stemming
 
 	//langkah 3 hapus first order prefiks (awalan pertama)
 	function hapusawalan1($kata,$jumlah){
-	if($jumlah!=1){
+	if($jumlah<1){
 
 		if(substr($kata,0,4)=="meng"){
 			if(substr($kata,4,1)=="e"||substr($kata,4,1)=="u"){
@@ -86,7 +86,7 @@ class Stemming
 	}
 	//langkah 4 hapus second order prefiks (awalan kedua)
 	function hapusawalan2($kata,$jumlah){
-	if($jumlah!=1){
+	if($jumlah<1){
 	  
 		if(substr($kata,0,3)=="ber"){
 			$kata = substr($kata,3);
@@ -108,7 +108,7 @@ class Stemming
 	}
 	////langkah 5 hapus suffiks
 	function hapusakhiran($kata,$jumlah){
-	if($jumlah!=1){
+	if($jumlah<1){
 
 		if (substr($kata, -3)== "kan" ){
 			$kata = substr($kata, 0, -3);

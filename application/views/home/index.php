@@ -7,7 +7,7 @@
             <div class="panel-body">
                 <div class="clearfix">
                     <div style="text-align: center;">
-                        <h1>Selamat Datang Admin</h1>
+                        <h1>Selamat Datang <?= ucfirst($this->session->userdata('nama')); ?></h1>
                     </div>
                 </div>
             </div>

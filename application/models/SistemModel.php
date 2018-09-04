@@ -127,6 +127,12 @@ class SistemModel extends CI_Model {
         return $jumlah;
     }
 
+    public function hapus_semua_data($tabel)
+    {
+        $query = $this->db->empty_table($tabel);
+        return $query;
+    }
+
 }
 
 /* End of file User.php */

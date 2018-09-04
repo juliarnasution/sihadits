@@ -132,8 +132,11 @@
                                 <a href="javascript:void(0);" class="waves-effect"><i class="ti-menu-alt"></i><span>Data </span> <span class="menu-arrow"></span></a>
                                 <ul class="list-unstyled">
                                     <li><a href="<?=base_url('user/index')?>">User</a></li>
-                                    <li><a href="<?=base_url('data/stemming')?>">Data Stemming</a></li>
+                                    <li><a href="<?=base_url('data/stemming_view')?>">Data Stemming</a></li>
                                     <li><a href="<?=base_url('data/stopword')?>">Data Stopword</a></li>
+                                    <li><a href="<?=base_url('data/generate_term')?>">Generate Term</a></li>
+                                    <li><a href="<?=base_url('data/generate_tf')?>">Generate Term Frekuensi (TF)</a></li>
+
                                     <!-- <li><a href="tables-editable.html">Editable Table</a></li> -->
                                 </ul>
                             </li>
