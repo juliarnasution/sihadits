@@ -34,6 +34,12 @@ class Bukhari extends CI_Controller {
 		$this->load->view('bukhari/profil',$data);
 		$this->load->view('template/footer');
 	}
+	// public function tambah()
+	// {
+	// 	$this->load->view('template/header');
+	// 	$this->load->view('bukhari/tambah');
+	// 	$this->load->view('template/footer');
+	// }
 
 	public function view()
 	{

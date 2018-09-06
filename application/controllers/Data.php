@@ -18,6 +18,54 @@ class Data extends CI_Controller {
 		$this->load->view('template/footer');
 	}
 
+	public function tambah_stemming()
+	{
+		$this->form_validation->set_rules('kata','kata', 'trim|required|xss_clean|is_unique[daftar_stemming.katadasar]',
+			array(
+                'is_unique'     => '<i class="fa fa-times-circle"></i> Kata dasar telah ada...!!!'
+	        )
+		);
+
+		if ($this->form_validation->run() == FALSE) {
+			$this->session->set_flashdata('notif', 
+				'<div class="alert alert-warning alert-dismissible">
+			    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+			    <h4><i class="icon fa fa-warning"></i> Peringatan !</h4>'.form_error("kata").'
+			</div>'
+			);	
+			
+			redirect('data/stemming_view');	
+		}
+
+		$data = array(
+			'katadasar'=>$this->input->post('kata'),
+			'tipe_katadasar'=>$this->input->post('tipe')
+		);
+
+		$input = $this->SistemModel->tambah_data('daftar_stemming',$data);
+		if ($input==true) {
+			$this->session->set_flashdata('notif', notifikasi(TRUE));
+		} else {
+			$this->session->set_flashdata('notif', notifikasi(FALSE));
+		}
+
+		redirect('data/stemming_view','refresh');
+		
+	}
+
+	public function hapus_stemming()
+	{
+		$no = $this->uri->segment(3);
+		$where = array('id_stemming'=>$no);		
+		$hapus = $this->SistemModel->hapus('daftar_stemming',$where);
+		if ($hapus) {
+			$this->session->set_flashdata('notif', notifikasi(TRUE));
+		}else{
+			$this->session->set_flashdata('notif', notifikasi(FALSE));
+		}
+		redirect('data/stemming_view','refresh');
+	}
+
 	public function stopword()
 	{
 		$data['data'] = $this->SistemModel->all_data("daftar_stopword","","ASC");
@@ -27,6 +75,52 @@ class Data extends CI_Controller {
 	}
 
 
+	public function tambah_stopword()
+	{
+		$this->form_validation->set_rules('stopword','stopword', 'trim|required|xss_clean|is_unique[daftar_stopword.word]',
+			array(
+                'is_unique'     => '<i class="fa fa-times-circle"></i> Stopword telah ada...!!!'
+	        )
+		);
+
+		if ($this->form_validation->run() == FALSE) {
+			$this->session->set_flashdata('notif', 
+				'<div class="alert alert-warning alert-dismissible">
+			    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+			    <h4><i class="icon fa fa-warning"></i> Peringatan !</h4>'.form_error("stopword").'
+			</div>'
+			);	
+			
+			redirect('data/stopword');	
+		}
+
+		$data = array(
+			'word'=>$this->input->post('stopword')
+		);
+
+		$input = $this->SistemModel->tambah_data('daftar_stopword',$data);
+		if ($input==true) {
+			$this->session->set_flashdata('notif', notifikasi(TRUE));
+		} else {
+			$this->session->set_flashdata('notif', notifikasi(FALSE));
+		}
+
+		redirect('data/stopword','refresh');
+		
+	}
+
+	public function hapus_stopword()
+	{
+		$no = $this->uri->segment(3);
+		$where = array('word'=>$no);		
+		$hapus = $this->SistemModel->hapus('daftar_stopword',$where);
+		if ($hapus) {
+			$this->session->set_flashdata('notif', notifikasi(TRUE));
+		}else{
+			$this->session->set_flashdata('notif', notifikasi(FALSE));
+		}
+		redirect('data/stopword','refresh');
+	}
 
 	public function generate_term()
 	{

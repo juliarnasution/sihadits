@@ -1,7 +1,11 @@
+<?= $this->session->flashdata('notif'); ?>
 <div class="row">
     <div class="col-sm-12">
         <div class="card-box table-responsive">
-            <h4 class="m-t-0 header-title"><b>Hadits Riwayat Bukhari</h4>
+            <div class="btn-toolbar" style="margin-bottom: 10px">
+                <h4 class="m-t-0 header-title"><b>Hadits Riwayat Bukhari</b></h4>
+                <a type="button" href="<?= base_url('bukhari/tambah')?>" class="btn btn-primary pull-right"> Tambah</a>
+            </div>
             <table id="datatable" class="table table-striped table-bordered">
                 <thead>
                     <tr>
